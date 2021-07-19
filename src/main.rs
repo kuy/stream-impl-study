@@ -1,9 +1,6 @@
 use chrono::Local;
-use futures::task::Poll;
-use futures::{Stream, StreamExt};
-use std::thread;
-use std::time::Duration;
-use std::{error::Error, result::Result};
+use futures::{task::Poll, Stream, StreamExt};
+use std::{error::Error, result::Result, thread, time::Duration};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
