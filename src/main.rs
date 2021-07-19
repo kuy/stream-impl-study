@@ -41,6 +41,10 @@ impl Stream for CountDownTimer {
             Poll::Ready(None)
         } else {
             let current = Local::now().timestamp_millis();
+            if self.timestamp == 0 {
+                self.timestamp = current;
+            }
+
             if current - self.timestamp < 1000 {
                 let waker = cx.waker().clone();
                 thread::spawn(move || {
@@ -50,10 +54,6 @@ impl Stream for CountDownTimer {
                     println!("poll_next: wake");
                     waker.wake();
                 });
-
-                if self.timestamp == 0 {
-                    self.timestamp = current;
-                }
 
                 println!("poll_next: pending");
                 Poll::Pending
