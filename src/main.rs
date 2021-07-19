@@ -1,6 +1,8 @@
 use chrono::Local;
 use futures::task::Poll;
 use futures::{Stream, StreamExt};
+use std::thread;
+use std::time::Duration;
 use std::{error::Error, result::Result};
 
 #[tokio::main]
@@ -35,18 +37,31 @@ impl Stream for CountDownTimer {
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Option<Self::Item>> {
         if self.count == 0 {
+            println!("poll_next: done");
             Poll::Ready(None)
         } else {
             let current = Local::now().timestamp_millis();
             if current - self.timestamp < 1000 {
+                let waker = cx.waker().clone();
+                thread::spawn(move || {
+                    println!("poll_next: sleep");
+                    thread::sleep(Duration::from_millis(1000));
+
+                    println!("poll_next: wake");
+                    waker.wake();
+                });
+
                 if self.timestamp == 0 {
                     self.timestamp = current;
                 }
-                cx.waker().wake_by_ref();
+
+                println!("poll_next: pending");
                 Poll::Pending
             } else {
                 self.count -= 1;
                 self.timestamp = current;
+
+                println!("poll_next: ready");
                 Poll::Ready(Some(self.count))
             }
         }
